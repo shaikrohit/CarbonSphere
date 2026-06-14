@@ -7,7 +7,7 @@ Instead of presenting abstract metric tons of carbon on dry reports, CarbonSpher
 ---
 
 ## 1. Chosen Vertical & Persona
-- **Challenge Vertical**: Challenge 3 - Carbon Footprint Awareness Platform.
+- **Vertical Focus**: Carbon Footprint Awareness Platform.
 - **System Persona**: **Aura, the Carbon Concierge** — an encouraging, professional, and context-aware AI assistant who analyzes the user's specific lifestyle profile and guides them towards high-impact reductions.
 
 ---
