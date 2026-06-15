@@ -1,5 +1,5 @@
-# Production Dockerfile for CarbonSphere on Google Cloud Run
-FROM node:20-alpine
+# Stage 1: Build static React assets
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -15,14 +15,17 @@ COPY . .
 # Compile optimized static bundle
 RUN npm run build
 
-# Install lightweight production static file server
-RUN npm install -g serve
+# Stage 2: Serve compiled assets with high performance Nginx web server
+FROM nginx:alpine
 
-# Expose port
+# Copy custom Nginx server configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy compiled static assets from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Expose Cloud Run default port
 EXPOSE 8080
 
-# Set environment for production runtime
-ENV NODE_ENV=production
-
-# Serve static site on port 8080 (Cloud Run default)
-CMD ["serve", "-s", "dist", "-l", "8080"]
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]

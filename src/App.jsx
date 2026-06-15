@@ -81,7 +81,7 @@ function App() {
         {!hasOnboarded ? (
           <div className="onboarding-container">
             <div className="onboarding-hero animate-fade-in">
-              <span className="badge-promo bg-accent-light text-accent">Personalized Insights</span>
+              <span className="badge-promo bg-accent-light text-accent">EcoSphere Simulator</span>
               <h2 className="hero-headline font-bold">
                 Make the Invisible <span className="gradient-text">Visible</span>
               </h2>
@@ -160,7 +160,7 @@ function App() {
       {/* Footer */}
       <footer className="app-footer text-secondary text-xs">
         <div className="footer-content">
-          <p>© {new Date().getFullYear()} CarbonSphere. Empowering conscious choices.</p>
+          <p>© {new Date().getFullYear()} CarbonSphere. A Professional Carbon Footprint Awareness Platform.</p>
           <div className="footer-links">
             <span className="flex-center gap-xs">
               Made with <Heart size={12} className="text-red" /> for sustainability
