@@ -1,4 +1,5 @@
 import { Lightbulb, Car, TreePine, HelpCircle, ArrowRightLeft } from 'lucide-react';
+import PropTypes from 'prop-types';
 
 export default function EquivalencePanel({ currentFootprint }) {
   // Conversions:
@@ -75,3 +76,7 @@ export default function EquivalencePanel({ currentFootprint }) {
     </div>
   );
 }
+
+EquivalencePanel.propTypes = {
+  currentFootprint: PropTypes.number.isRequired
+};

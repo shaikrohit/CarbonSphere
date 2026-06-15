@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Bot, Send, Key, Check } from 'lucide-react';
+import PropTypes from 'prop-types';
 
 export default function InsightsPanel({
   baseline,
@@ -233,6 +234,8 @@ You are Aura, an encouraging, professional, and knowledgeable AI Carbon Concierg
           <div className="form-group-inline">
             <input
               type="password"
+              maxLength={100}
+              aria-label="Google Gemini API Key"
               placeholder="Paste Google Gemini API Key"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
@@ -289,6 +292,8 @@ You are Aura, an encouraging, professional, and knowledgeable AI Carbon Concierg
       <form onSubmit={handleSendChat} className="chat-input-bar">
         <input
           type="text"
+          maxLength={300}
+          aria-label="Ask Aura a carbon question"
           placeholder="Ask Aura a carbon question..."
           value={chatInput}
           onChange={(e) => setChatInput(e.target.value)}
@@ -301,3 +306,21 @@ You are Aura, an encouraging, professional, and knowledgeable AI Carbon Concierg
     </div>
   );
 }
+
+InsightsPanel.propTypes = {
+  baseline: PropTypes.shape({
+    carKmPerWeek: PropTypes.number.isRequired,
+    carFuelType: PropTypes.string.isRequired,
+    flightsPerYear: PropTypes.number.isRequired,
+    publicTransitHoursPerWeek: PropTypes.number.isRequired,
+    electricityKwhPerMonth: PropTypes.number.isRequired,
+    lpgCylindersPerMonth: PropTypes.number.isRequired,
+    dietType: PropTypes.string.isRequired,
+    wasteRecycling: PropTypes.string.isRequired,
+    shoppingFrequency: PropTypes.string.isRequired
+  }).isRequired,
+  currentFootprint: PropTypes.number.isRequired,
+  totalBaseline: PropTypes.number.isRequired,
+  totalDailySavings: PropTypes.number.isRequired,
+  ecoScore: PropTypes.number.isRequired
+};

@@ -1,4 +1,5 @@
 import { Sparkles, Smile, AlertTriangle } from 'lucide-react';
+import PropTypes from 'prop-types';
 
 export default function EcoSphere({ ecoScore, currentFootprint }) {
   // Determine color states based on EcoScore
@@ -39,7 +40,16 @@ export default function EcoSphere({ ecoScore, currentFootprint }) {
       </div>
 
       <div className="ecosphere-visual-container">
-        <svg viewBox="0 0 400 320" className="ecosphere-svg" width="100%" height="100%">
+        <svg
+          viewBox="0 0 400 320"
+          className="ecosphere-svg"
+          width="100%"
+          height="100%"
+          role="img"
+          aria-label="Interactive EcoSphere visual landscape showing ecosystem health"
+        >
+          <title>EcoSphere Landscape</title>
+          <desc>A dynamic mini-island that changes its colors, trees, and wind turbine speed based on your carbon score.</desc>
           <defs>
             {/* Dynamic Sky Gradient */}
             <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -216,3 +226,8 @@ export default function EcoSphere({ ecoScore, currentFootprint }) {
     </div>
   );
 }
+
+EcoSphere.propTypes = {
+  ecoScore: PropTypes.number.isRequired,
+  currentFootprint: PropTypes.number.isRequired
+};

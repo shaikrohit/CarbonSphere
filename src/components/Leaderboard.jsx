@@ -1,4 +1,5 @@
 import { Trophy, Flame, Users, Sparkles } from 'lucide-react';
+import PropTypes from 'prop-types';
 
 export default function Leaderboard({ teams, selectedTeam, onSelectTeam, streak }) {
   // Sort teams by total reduction descending
@@ -78,3 +79,18 @@ export default function Leaderboard({ teams, selectedTeam, onSelectTeam, streak 
     </div>
   );
 }
+
+Leaderboard.propTypes = {
+  teams: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      members: PropTypes.number.isRequired,
+      reduction: PropTypes.number.isRequired,
+      streak: PropTypes.number.isRequired
+    })
+  ).isRequired,
+  selectedTeam: PropTypes.string.isRequired,
+  onSelectTeam: PropTypes.func.isRequired,
+  streak: PropTypes.number.isRequired
+};

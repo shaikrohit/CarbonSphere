@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ACTIONS } from '../hooks/useCarbonState';
+import PropTypes from 'prop-types';
 import { Leaf, Train, Bike, Users, Wind, Lightbulb, Plug, Utensils, ShoppingBag, RefreshCw, Trash2, Plus, Check } from 'lucide-react';
 
 const iconMap = {
@@ -136,6 +137,8 @@ export default function ActionTracker({
                   <input
                     type="text"
                     required
+                    maxLength={100}
+                    aria-label="Describe your custom action"
                     placeholder="Describe your action (e.g. Switched off router at night)"
                     value={customText}
                     onChange={(e) => setCustomText(e.target.value)}
@@ -146,6 +149,7 @@ export default function ActionTracker({
                       step="0.1"
                       min="0.1"
                       required
+                      aria-label="Custom action carbon savings in kilograms"
                       placeholder="Savings"
                       value={customSavings}
                       onChange={(e) => setCustomSavings(parseFloat(e.target.value) || 0)}
@@ -182,3 +186,21 @@ export default function ActionTracker({
     </div>
   );
 }
+
+ActionTracker.propTypes = {
+  completedActions: PropTypes.arrayOf(PropTypes.string).isRequired,
+  toggleAction: PropTypes.func.isRequired,
+  customActions: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      category: PropTypes.string.isRequired,
+      text: PropTypes.string.isRequired,
+      savings: PropTypes.number.isRequired,
+      checked: PropTypes.bool.isRequired
+    })
+  ).isRequired,
+  addCustomAction: PropTypes.func.isRequired,
+  toggleCustomAction: PropTypes.func.isRequired,
+  deleteCustomAction: PropTypes.func.isRequired,
+  totalDailySavings: PropTypes.number.isRequired
+};

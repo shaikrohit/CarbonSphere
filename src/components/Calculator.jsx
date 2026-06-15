@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plane, Car, Flame, Sparkles, ArrowRight, ArrowLeft } from 'lucide-react';
+import PropTypes from 'prop-types';
 
 export default function Calculator({ baseline, onChange, onComplete }) {
   const [step, setStep] = useState(1);
@@ -220,3 +221,19 @@ export default function Calculator({ baseline, onChange, onComplete }) {
     </div>
   );
 }
+
+Calculator.propTypes = {
+  baseline: PropTypes.shape({
+    carKmPerWeek: PropTypes.number.isRequired,
+    carFuelType: PropTypes.string.isRequired,
+    flightsPerYear: PropTypes.number.isRequired,
+    publicTransitHoursPerWeek: PropTypes.number.isRequired,
+    electricityKwhPerMonth: PropTypes.number.isRequired,
+    lpgCylindersPerMonth: PropTypes.number.isRequired,
+    dietType: PropTypes.string.isRequired,
+    wasteRecycling: PropTypes.string.isRequired,
+    shoppingFrequency: PropTypes.string.isRequired
+  }).isRequired,
+  onChange: PropTypes.func.isRequired,
+  onComplete: PropTypes.func.isRequired
+};
