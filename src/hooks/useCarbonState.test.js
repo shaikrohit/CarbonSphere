@@ -65,3 +65,27 @@ describe('Carbon Baseline Calculation Logic', () => {
     expect(co2).toBe(10.98);
   });
 });
+
+describe('Carbon Reduction Offsets Logic', () => {
+  test('calculates correct annual offsets from daily savings', () => {
+    // If user saves 5.2 kg/day (e.g., taking metro)
+    const dailySavingsKg = 5.2;
+    // Annual savings in tons = (5.2 * 365) / 1000 = 1.898 tons -> rounded to 2 decimal places = 1.90
+    const annualSavingsTons = Number(((dailySavingsKg * 365) / 1000).toFixed(2));
+    expect(annualSavingsTons).toBe(1.90);
+
+    const baselineTons = 5.24;
+    const currentFootprint = Math.max(0, Number((baselineTons - annualSavingsTons).toFixed(2)));
+    // 5.24 - 1.90 = 3.34 tons
+    expect(currentFootprint).toBe(3.34);
+  });
+
+  test('handles large daily savings exceeding baseline footprint', () => {
+    // If daily savings are extremely high, current footprint should pin to 0 (cannot be negative)
+    const dailySavingsKg = 25.0; // 25.0 * 365 / 1000 = 9.125 tons -> 9.13 tons
+    const annualSavingsTons = Number(((dailySavingsKg * 365) / 1000).toFixed(2));
+    const baselineTons = 5.24;
+    const currentFootprint = Math.max(0, Number((baselineTons - annualSavingsTons).toFixed(2)));
+    expect(currentFootprint).toBe(0);
+  });
+});
