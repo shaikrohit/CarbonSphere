@@ -1,4 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+
+/**
+ * Escapes HTML characters to prevent potential XSS injection in user custom actions.
+ * @param {string} str - Unsanitized user string input.
+ * @returns {string} Sanitized string.
+ */
+export const sanitizeInput = (str) => {
+  return str.replace(/[&<>"']/g, (m) => {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;'
+    };
+    return map[m];
+  });
+};
 
 export const DEFAULT_BASELINE = {
   carKmPerWeek: 50,
@@ -110,41 +128,47 @@ export default function useCarbonState() {
   });
 
   // Calculate base values
-  const totalBaseline = calculateBaselineCO2(baseline); // annual in tons
+  const totalBaseline = useMemo(() => calculateBaselineCO2(baseline), [baseline]);
 
   // Calculate dynamic savings
-  const regularSavings = completedActions.reduce((acc, actionId) => {
-    const action = ACTIONS.find(a => a.id === actionId);
-    return acc + (action ? action.savings : 0);
-  }, 0);
+  const regularSavings = useMemo(() => {
+    return completedActions.reduce((acc, actionId) => {
+      const action = ACTIONS.find(a => a.id === actionId);
+      return acc + (action ? action.savings : 0);
+    }, 0);
+  }, [completedActions]);
 
-  const customSavings = customActions.reduce((acc, action) => {
-    return acc + (action.checked ? action.savings : 0);
-  }, 0);
+  const customSavings = useMemo(() => {
+    return customActions.reduce((acc, action) => {
+      return acc + (action.checked ? action.savings : 0);
+    }, 0);
+  }, [customActions]);
 
-  const totalDailySavings = regularSavings + customSavings; // daily savings in kg CO2
+  const totalDailySavings = useMemo(() => regularSavings + customSavings, [regularSavings, customSavings]);
 
   // Simulated annual savings if daily actions are sustained
-  const annualSavingsTons = Number(((totalDailySavings * 365) / 1000).toFixed(2));
+  const annualSavingsTons = useMemo(() => Number(((totalDailySavings * 365) / 1000).toFixed(2)), [totalDailySavings]);
   
   // Real-time adjusted annual carbon footprint
-  const currentFootprint = Math.max(0, Number((totalBaseline - annualSavingsTons).toFixed(2)));
+  const currentFootprint = useMemo(() => Math.max(0, Number((totalBaseline - annualSavingsTons).toFixed(2))), [totalBaseline, annualSavingsTons]);
 
   // Eco Score (0 - 100)
   // Average Indian urban resident is ~1.8 tons/year. Global target is ~2.0 tons/year.
   // Score starts from 100 and drops as footprint exceeds 1.8 tons, but climbs as user completes savings.
-  let ecoScore;
-  if (currentFootprint > 1.8) {
-    // scale score down based on how much they exceed target
-    const excess = currentFootprint - 1.8;
-    ecoScore = Math.max(10, Math.round(100 - excess * 8));
-  } else {
-    // scale up score towards 100
-    const ratio = currentFootprint / 1.8;
-    ecoScore = Math.min(100, Math.round(50 + (1 - ratio) * 50));
-  }
-  // Add direct bonus for doing daily actions
-  ecoScore = Math.min(100, ecoScore + completedActions.length * 3);
+  const ecoScore = useMemo(() => {
+    let score;
+    if (currentFootprint > 1.8) {
+      // scale score down based on how much they exceed target
+      const excess = currentFootprint - 1.8;
+      score = Math.max(10, Math.round(100 - excess * 8));
+    } else {
+      // scale up score towards 100
+      const ratio = currentFootprint / 1.8;
+      score = Math.min(100, Math.round(50 + (1 - ratio) * 50));
+    }
+    // Add direct bonus for doing daily actions
+    return Math.min(100, score + completedActions.length * 3);
+  }, [currentFootprint, completedActions.length]);
 
   // Sync to local storage
   useEffect(() => {
@@ -172,7 +196,16 @@ export default function useCarbonState() {
     localStorage.setItem('cs_teams', JSON.stringify(teams));
   }, [teams]);
 
-  const toggleAction = (id) => {
+  const updateTeamReduction = useCallback((teamId, amount) => {
+    setTeams(prev => prev.map(t => {
+      if (t.id === teamId) {
+        return { ...t, reduction: Math.max(0, Math.round(t.reduction + amount)) };
+      }
+      return t;
+    }));
+  }, []);
+
+  const toggleAction = useCallback((id) => {
     setCompletedActions(prev => {
       const exists = prev.includes(id);
       let updated;
@@ -191,30 +224,22 @@ export default function useCarbonState() {
 
       return updated;
     });
-  };
+  }, [selectedTeam, updateTeamReduction]);
 
-  const updateTeamReduction = (teamId, amount) => {
-    setTeams(prev => prev.map(t => {
-      if (t.id === teamId) {
-        return { ...t, reduction: Math.max(0, Math.round(t.reduction + amount)) };
-      }
-      return t;
-    }));
-  };
-
-  const addCustomAction = (text, savings) => {
+  const addCustomAction = useCallback((text, savings) => {
+    const sanitizedText = sanitizeInput(text);
     const newAction = {
       id: `custom_${Date.now()}`,
       category: 'Custom',
-      text,
+      text: sanitizedText,
       savings: Number(savings) || 1.0,
       checked: true
     };
     setCustomActions(prev => [...prev, newAction]);
     updateTeamReduction(selectedTeam, newAction.savings);
-  };
+  }, [selectedTeam, updateTeamReduction]);
 
-  const toggleCustomAction = (id) => {
+  const toggleCustomAction = useCallback((id) => {
     setCustomActions(prev => prev.map(action => {
       if (action.id === id) {
         const nextChecked = !action.checked;
@@ -224,9 +249,9 @@ export default function useCarbonState() {
       }
       return action;
     }));
-  };
+  }, [selectedTeam, updateTeamReduction]);
 
-  const deleteCustomAction = (id) => {
+  const deleteCustomAction = useCallback((id) => {
     setCustomActions(prev => {
       const action = prev.find(a => a.id === id);
       if (action && action.checked) {
@@ -234,9 +259,9 @@ export default function useCarbonState() {
       }
       return prev.filter(a => a.id !== id);
     });
-  };
+  }, [selectedTeam, updateTeamReduction]);
 
-  const resetAll = () => {
+  const resetAll = useCallback(() => {
     localStorage.clear();
     setBaseline(DEFAULT_BASELINE);
     setCompletedActions([]);
@@ -245,7 +270,7 @@ export default function useCarbonState() {
     setStreak(3);
     setHasOnboarded(false);
     setTeams(TEAMS_INITIAL);
-  };
+  }, []);
 
   return {
     baseline,

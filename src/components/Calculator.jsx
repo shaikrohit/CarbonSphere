@@ -47,25 +47,46 @@ export default function Calculator({ baseline, onChange, onComplete }) {
                 id="carKm"
                 type="number"
                 min="0"
+                max="10000"
                 value={localData.carKmPerWeek}
-                onChange={(e) => handleFieldChange('carKmPerWeek', Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={(e) => handleFieldChange('carKmPerWeek', Math.min(10000, Math.max(0, parseInt(e.target.value) || 0)))}
                 placeholder="e.g. 50"
               />
             </div>
 
             <div className="form-group">
-              <label>Vehicle Fuel Type</label>
-              <div className="radio-group">
-                {['petrol', 'diesel', 'hybrid', 'ev'].map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    className={`btn-radio ${localData.carFuelType === type ? 'active' : ''}`}
-                    onClick={() => handleFieldChange('carFuelType', type)}
-                  >
-                    {type.toUpperCase()}
-                  </button>
-                ))}
+              <span className="radio-group-label" id="fuel-type-label">Vehicle Fuel Type</span>
+              <div className="radio-group" role="radiogroup" aria-labelledby="fuel-type-label">
+                {['petrol', 'diesel', 'hybrid', 'ev'].map((type, idx) => {
+                  const isChecked = localData.carFuelType === type;
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      role="radio"
+                      aria-checked={isChecked}
+                      tabIndex={isChecked ? 0 : -1}
+                      className={`btn-radio ${isChecked ? 'active' : ''}`}
+                      onClick={() => handleFieldChange('carFuelType', type)}
+                      onKeyDown={(e) => {
+                        const fuelTypes = ['petrol', 'diesel', 'hybrid', 'ev'];
+                        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          const nextIdx = (idx + 1) % fuelTypes.length;
+                          handleFieldChange('carFuelType', fuelTypes[nextIdx]);
+                          setTimeout(() => e.target.parentElement.children[nextIdx]?.focus(), 0);
+                        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          const prevIdx = (idx - 1 + fuelTypes.length) % fuelTypes.length;
+                          handleFieldChange('carFuelType', fuelTypes[prevIdx]);
+                          setTimeout(() => e.target.parentElement.children[prevIdx]?.focus(), 0);
+                        }
+                      }}
+                    >
+                      {type.toUpperCase()}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -79,8 +100,9 @@ export default function Calculator({ baseline, onChange, onComplete }) {
                 id="flights"
                 type="number"
                 min="0"
+                max="365"
                 value={localData.flightsPerYear}
-                onChange={(e) => handleFieldChange('flightsPerYear', Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={(e) => handleFieldChange('flightsPerYear', Math.min(365, Math.max(0, parseInt(e.target.value) || 0)))}
                 placeholder="e.g. 2"
               />
             </div>
@@ -91,8 +113,9 @@ export default function Calculator({ baseline, onChange, onComplete }) {
                 id="transit"
                 type="number"
                 min="0"
+                max="168"
                 value={localData.publicTransitHoursPerWeek}
-                onChange={(e) => handleFieldChange('publicTransitHoursPerWeek', Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={(e) => handleFieldChange('publicTransitHoursPerWeek', Math.min(168, Math.max(0, parseInt(e.target.value) || 0)))}
                 placeholder="e.g. 5"
               />
             </div>
@@ -112,8 +135,9 @@ export default function Calculator({ baseline, onChange, onComplete }) {
                 id="electricity"
                 type="number"
                 min="0"
+                max="50000"
                 value={localData.electricityKwhPerMonth}
-                onChange={(e) => handleFieldChange('electricityKwhPerMonth', Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={(e) => handleFieldChange('electricityKwhPerMonth', Math.min(50000, Math.max(0, parseInt(e.target.value) || 0)))}
                 placeholder="e.g. 150"
               />
               <span className="field-hint">Average Indian household uses ~100–250 kWh/month.</span>
@@ -126,8 +150,9 @@ export default function Calculator({ baseline, onChange, onComplete }) {
                 type="number"
                 step="0.1"
                 min="0"
+                max="30"
                 value={localData.lpgCylindersPerMonth}
-                onChange={(e) => handleFieldChange('lpgCylindersPerMonth', Math.max(0, parseFloat(e.target.value) || 0))}
+                onChange={(e) => handleFieldChange('lpgCylindersPerMonth', Math.min(30, Math.max(0, parseFloat(e.target.value) || 0)))}
                 placeholder="e.g. 0.5"
               />
               <span className="field-hint">Usually one cylinder lasts about 1.5 to 2 months.</span>
@@ -143,63 +168,123 @@ export default function Calculator({ baseline, onChange, onComplete }) {
             </div>
 
             <div className="form-group">
-              <label>Dietary Profile</label>
-              <div className="radio-group-vertical">
+              <span className="radio-group-label" id="diet-profile-label">Dietary Profile</span>
+              <div className="radio-group-vertical" role="radiogroup" aria-labelledby="diet-profile-label">
                 {[
                   { value: 'heavy-meat', label: 'Meat-Intense (Daily meat consumption)' },
                   { value: 'low-meat', label: 'Balanced (Meat occasionally / low-meat)' },
                   { value: 'vegetarian', label: 'Vegetarian (No meat, eggs/dairy ok)' },
                   { value: 'vegan', label: 'Strictly Vegan (100% plant-based)' }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={`btn-radio btn-radio-wide ${localData.dietType === option.value ? 'active' : ''}`}
-                    onClick={() => handleFieldChange('dietType', option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                ].map((option, idx) => {
+                  const isChecked = localData.dietType === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={isChecked}
+                      tabIndex={isChecked ? 0 : -1}
+                      className={`btn-radio btn-radio-wide ${isChecked ? 'active' : ''}`}
+                      onClick={() => handleFieldChange('dietType', option.value)}
+                      onKeyDown={(e) => {
+                        const optionsList = ['heavy-meat', 'low-meat', 'vegetarian', 'vegan'];
+                        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          const nextIdx = (idx + 1) % optionsList.length;
+                          handleFieldChange('dietType', optionsList[nextIdx]);
+                          setTimeout(() => e.target.parentElement.children[nextIdx]?.focus(), 0);
+                        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          const prevIdx = (idx - 1 + optionsList.length) % optionsList.length;
+                          handleFieldChange('dietType', optionsList[prevIdx]);
+                          setTimeout(() => e.target.parentElement.children[prevIdx]?.focus(), 0);
+                        }
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             <div className="form-group">
-              <label>Shopping & Buying Habits</label>
-              <div className="radio-group">
+              <span className="radio-group-label" id="shopping-habits-label">Shopping & Buying Habits</span>
+              <div className="radio-group" role="radiogroup" aria-labelledby="shopping-habits-label">
                 {[
                   { value: 'high', label: 'Frequent' },
                   { value: 'average', label: 'Moderate' },
                   { value: 'low', label: 'Minimalist' }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={`btn-radio ${localData.shoppingFrequency === option.value ? 'active' : ''}`}
-                    onClick={() => handleFieldChange('shoppingFrequency', option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                ].map((option, idx) => {
+                  const isChecked = localData.shoppingFrequency === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={isChecked}
+                      tabIndex={isChecked ? 0 : -1}
+                      className={`btn-radio ${isChecked ? 'active' : ''}`}
+                      onClick={() => handleFieldChange('shoppingFrequency', option.value)}
+                      onKeyDown={(e) => {
+                        const optionsList = ['high', 'average', 'low'];
+                        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          const nextIdx = (idx + 1) % optionsList.length;
+                          handleFieldChange('shoppingFrequency', optionsList[nextIdx]);
+                          setTimeout(() => e.target.parentElement.children[nextIdx]?.focus(), 0);
+                        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          const prevIdx = (idx - 1 + optionsList.length) % optionsList.length;
+                          handleFieldChange('shoppingFrequency', optionsList[prevIdx]);
+                          setTimeout(() => e.target.parentElement.children[prevIdx]?.focus(), 0);
+                        }
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             <div className="form-group">
-              <label>Waste Recycling Habits</label>
-              <div className="radio-group">
+              <span className="radio-group-label" id="recycling-habits-label">Waste Recycling Habits</span>
+              <div className="radio-group" role="radiogroup" aria-labelledby="recycling-habits-label">
                 {[
                   { value: 'none', label: 'No Recycling' },
                   { value: 'some', label: 'Partial' },
                   { value: 'most', label: 'Thorough' }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={`btn-radio ${localData.wasteRecycling === option.value ? 'active' : ''}`}
-                    onClick={() => handleFieldChange('wasteRecycling', option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                ].map((option, idx) => {
+                  const isChecked = localData.wasteRecycling === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={isChecked}
+                      tabIndex={isChecked ? 0 : -1}
+                      className={`btn-radio ${isChecked ? 'active' : ''}`}
+                      onClick={() => handleFieldChange('wasteRecycling', option.value)}
+                      onKeyDown={(e) => {
+                        const optionsList = ['none', 'some', 'most'];
+                        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          const nextIdx = (idx + 1) % optionsList.length;
+                          handleFieldChange('wasteRecycling', optionsList[nextIdx]);
+                          setTimeout(() => e.target.parentElement.children[nextIdx]?.focus(), 0);
+                        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          const prevIdx = (idx - 1 + optionsList.length) % optionsList.length;
+                          handleFieldChange('wasteRecycling', optionsList[prevIdx]);
+                          setTimeout(() => e.target.parentElement.children[prevIdx]?.focus(), 0);
+                        }
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

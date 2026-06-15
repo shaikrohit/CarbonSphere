@@ -1,16 +1,10 @@
 import { Trophy, Flame, Users, Sparkles } from 'lucide-react';
 import PropTypes from 'prop-types';
+import { getBadgeName } from '../utils/helpers';
 
 export default function Leaderboard({ teams, selectedTeam, onSelectTeam, streak }) {
   // Sort teams by total reduction descending
   const sortedTeams = [...teams].sort((a, b) => b.reduction - a.reduction);
-
-  const getBadgeName = (streakDays) => {
-    if (streakDays >= 15) return 'Eco Champion';
-    if (streakDays >= 10) return 'Carbon Guardian';
-    if (streakDays >= 5) return 'Green Pioneer';
-    return 'Seedling';
-  };
 
   return (
     <div className="card glass-panel leaderboard-card animate-fade-in">
@@ -40,7 +34,7 @@ export default function Leaderboard({ teams, selectedTeam, onSelectTeam, streak 
         </div>
       </div>
 
-      <div className="teams-list">
+      <div className="teams-list" role="listbox" aria-label="Department Leaderboard Selection">
         {sortedTeams.map((team, index) => {
           const isSelected = team.id === selectedTeam;
           const maxReduction = sortedTeams[0].reduction || 1;
@@ -51,6 +45,16 @@ export default function Leaderboard({ teams, selectedTeam, onSelectTeam, streak 
               key={team.id}
               className={`team-row-item ${isSelected ? 'selected-team' : ''}`}
               onClick={() => onSelectTeam(team.id)}
+              role="option"
+              aria-selected={isSelected}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                  e.preventDefault();
+                  onSelectTeam(team.id);
+                }
+              }}
+              aria-label={`${team.name}, Rank ${index + 1}, ${team.members} members, ${team.streak} days average streak. Saved ${team.reduction.toLocaleString()} kilograms of CO2. ${isSelected ? 'Your selected team.' : 'Click to select.'}`}
             >
               <div className="team-rank">{index + 1}</div>
               <div className="team-info">

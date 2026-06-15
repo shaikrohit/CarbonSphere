@@ -1,12 +1,15 @@
+import { lazy, Suspense } from 'react';
 import useCarbonState from './hooks/useCarbonState';
-import Calculator from './components/Calculator';
-import EcoSphere from './components/EcoSphere';
-import ActionTracker from './components/ActionTracker';
-import EquivalencePanel from './components/EquivalencePanel';
-import Leaderboard from './components/Leaderboard';
-import InsightsPanel from './components/InsightsPanel';
 import { Leaf, RefreshCw, Heart } from 'lucide-react';
 import './App.css';
+
+// Lazy-load dashboard and onboarding widgets to improve initial page load speed
+const Calculator = lazy(() => import('./components/Calculator'));
+const EcoSphere = lazy(() => import('./components/EcoSphere'));
+const ActionTracker = lazy(() => import('./components/ActionTracker'));
+const EquivalencePanel = lazy(() => import('./components/EquivalencePanel'));
+const Leaderboard = lazy(() => import('./components/Leaderboard'));
+const InsightsPanel = lazy(() => import('./components/InsightsPanel'));
 
 function App() {
   const {
@@ -91,11 +94,13 @@ function App() {
             </div>
             
             <div className="calculator-wrapper">
-              <Calculator
-                baseline={baseline}
-                onChange={setBaseline}
-                onComplete={handleOnboardingComplete}
-              />
+              <Suspense fallback={<div className="loading-fallback glass-panel"><div className="spinner"></div><p>Initializing Eco-Calculator...</p></div>}>
+                <Calculator
+                  baseline={baseline}
+                  onChange={setBaseline}
+                  onComplete={handleOnboardingComplete}
+                />
+              </Suspense>
             </div>
             
             <div className="features-preview-grid">
@@ -114,46 +119,48 @@ function App() {
             </div>
           </div>
         ) : (
-          <div className="dashboard-grid animate-fade-in">
-            {/* Left Column: Visuals & Cognition */}
-            <div className="dashboard-col left-col">
-              <EcoSphere
-                ecoScore={ecoScore}
-                currentFootprint={currentFootprint}
-              />
-              <EquivalencePanel
-                currentFootprint={currentFootprint}
-              />
-            </div>
+          <Suspense fallback={<div className="loading-fallback glass-panel"><div className="spinner"></div><p>Synchronizing your virtual EcoSphere...</p></div>}>
+            <div className="dashboard-grid animate-fade-in">
+              {/* Left Column: Visuals & Cognition */}
+              <div className="dashboard-col left-col">
+                <EcoSphere
+                  ecoScore={ecoScore}
+                  currentFootprint={currentFootprint}
+                />
+                <EquivalencePanel
+                  currentFootprint={currentFootprint}
+                />
+              </div>
 
-            {/* Right Column: Activities, Insights & Teams */}
-            <div className="dashboard-col right-col">
-              <ActionTracker
-                completedActions={completedActions}
-                toggleAction={toggleAction}
-                customActions={customActions}
-                addCustomAction={addCustomAction}
-                toggleCustomAction={toggleCustomAction}
-                deleteCustomAction={deleteCustomAction}
-                totalDailySavings={totalDailySavings}
-              />
-              
-              <InsightsPanel
-                baseline={baseline}
-                currentFootprint={currentFootprint}
-                totalBaseline={totalBaseline}
-                totalDailySavings={totalDailySavings}
-                ecoScore={ecoScore}
-              />
+              {/* Right Column: Activities, Insights & Teams */}
+              <div className="dashboard-col right-col">
+                <ActionTracker
+                  completedActions={completedActions}
+                  toggleAction={toggleAction}
+                  customActions={customActions}
+                  addCustomAction={addCustomAction}
+                  toggleCustomAction={toggleCustomAction}
+                  deleteCustomAction={deleteCustomAction}
+                  totalDailySavings={totalDailySavings}
+                />
+                
+                <InsightsPanel
+                  baseline={baseline}
+                  currentFootprint={currentFootprint}
+                  totalBaseline={totalBaseline}
+                  totalDailySavings={totalDailySavings}
+                  ecoScore={ecoScore}
+                />
 
-              <Leaderboard
-                teams={teams}
-                selectedTeam={selectedTeam}
-                onSelectTeam={setSelectedTeam}
-                streak={streak}
-              />
+                <Leaderboard
+                  teams={teams}
+                  selectedTeam={selectedTeam}
+                  onSelectTeam={setSelectedTeam}
+                  streak={streak}
+                />
+              </div>
             </div>
-          </div>
+          </Suspense>
         )}
       </main>
 

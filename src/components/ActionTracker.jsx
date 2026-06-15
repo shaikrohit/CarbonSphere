@@ -60,20 +60,38 @@ export default function ActionTracker({
         </div>
       </div>
 
-      <div className="tabs-container">
-        {categories.map((cat) => (
+      <div className="tabs-container" role="tablist" aria-label="Action Categories">
+        {categories.map((cat, index) => (
           <button
+            id={`tab-${cat}`}
             key={cat}
             type="button"
+            role="tab"
+            aria-selected={activeTab === cat}
+            aria-controls={`panel-${cat}`}
+            tabIndex={activeTab === cat ? 0 : -1}
             className={`tab-btn ${activeTab === cat ? 'active' : ''}`}
             onClick={() => setActiveTab(cat)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                const nextIdx = (index + 1) % categories.length;
+                setActiveTab(categories[nextIdx]);
+                setTimeout(() => document.getElementById(`tab-${categories[nextIdx]}`)?.focus(), 0);
+              } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                const prevIdx = (index - 1 + categories.length) % categories.length;
+                setActiveTab(categories[prevIdx]);
+                setTimeout(() => document.getElementById(`tab-${categories[prevIdx]}`)?.focus(), 0);
+              }
+            }}
           >
             {cat}
           </button>
         ))}
       </div>
 
-      <div className="actions-list">
+      <div className="actions-list" id={`panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
         {/* Core Actions */}
         {activeTab !== 'Custom' && filteredActions.map((action) => {
           const IconComponent = iconMap[action.icon] || Leaf;
@@ -83,6 +101,16 @@ export default function ActionTracker({
               key={action.id}
               className={`action-item ${isChecked ? 'checked' : ''}`}
               onClick={() => toggleAction(action.id)}
+              role="checkbox"
+              aria-checked={isChecked}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                  e.preventDefault();
+                  toggleAction(action.id);
+                }
+              }}
+              aria-label={`${action.text} (${action.category}) - saves ${action.savings} kg of CO2`}
             >
               <div className="action-checkbox">
                 {isChecked && <Check size={14} className="check-icon" />}
@@ -107,15 +135,31 @@ export default function ActionTracker({
                 key={action.id}
                 className={`action-item custom-action-item ${action.checked ? 'checked' : ''}`}
               >
-                <div className="action-checkbox" onClick={() => toggleCustomAction(action.id)}>
-                  {action.checked && <Check size={14} className="check-icon" />}
-                </div>
-                <div className="action-icon-wrapper">
-                  <Leaf size={18} className="action-icon text-custom" />
-                </div>
-                <div className="action-text-content" onClick={() => toggleCustomAction(action.id)}>
-                  <span className="action-text">{action.text}</span>
-                  <span className="action-category-label">Custom Action</span>
+                <div
+                  className="custom-action-main-click"
+                  role="checkbox"
+                  aria-checked={action.checked}
+                  tabIndex={0}
+                  onClick={() => toggleCustomAction(action.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                      e.preventDefault();
+                      toggleCustomAction(action.id);
+                    }
+                  }}
+                  aria-label={`${action.text} (Custom Action) - saves ${action.savings} kg of CO2`}
+                  style={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: '12px', cursor: 'pointer' }}
+                >
+                  <div className="action-checkbox">
+                    {action.checked && <Check size={14} className="check-icon" />}
+                  </div>
+                  <div className="action-icon-wrapper">
+                    <Leaf size={18} className="action-icon text-custom" />
+                  </div>
+                  <div className="action-text-content">
+                    <span className="action-text">{action.text}</span>
+                    <span className="action-category-label">Custom Action</span>
+                  </div>
                 </div>
                 <div className="action-custom-right">
                   <span className="action-savings font-bold">-{action.savings} kg</span>
@@ -123,7 +167,7 @@ export default function ActionTracker({
                     type="button"
                     className="btn-delete-action"
                     onClick={() => deleteCustomAction(action.id)}
-                    aria-label="Delete custom action"
+                    aria-label={`Delete custom action: ${action.text}`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -148,11 +192,12 @@ export default function ActionTracker({
                       type="number"
                       step="0.1"
                       min="0.1"
+                      max="100"
                       required
                       aria-label="Custom action carbon savings in kilograms"
                       placeholder="Savings"
                       value={customSavings}
-                      onChange={(e) => setCustomSavings(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => setCustomSavings(Math.min(100, Math.max(0.1, parseFloat(e.target.value) || 0.1)))}
                     />
                     <span className="input-unit">kg CO₂</span>
                   </div>
