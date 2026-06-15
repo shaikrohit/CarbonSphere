@@ -3,6 +3,13 @@ import { Bot, Send, Key, Check } from 'lucide-react';
 import PropTypes from 'prop-types';
 import { getHighestCategory, getLocalResponse } from '../utils/helpers';
 
+/**
+ * InsightsPanel Component - Renders Aura, the AI Carbon Concierge assistant interface.
+ * Connects to Google Gemini API when configured with an API key, or falls back to
+ * a local rule-based response engine. Includes inline error states and screen reader regions.
+ * 
+ * @component
+ */
 export default function InsightsPanel({
   baseline,
   currentFootprint,
@@ -16,6 +23,7 @@ export default function InsightsPanel({
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [keySaved, setKeySaved] = useState(false);
   const [chatInput, setChatInput] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [messages, setMessages] = useState([
     {
       id: 'welcome',
@@ -37,9 +45,10 @@ export default function InsightsPanel({
     // Validate Gemini key prefix & character pattern to prevent garbage/malicious entries
     const geminiRegex = /^AIzaSy[A-Za-z0-9_-]{29,45}$/;
     if (!geminiRegex.test(trimmedKey)) {
-      alert("Invalid Format: The API key must be a valid Google API key format starting with 'AIzaSy' and contain only letters, numbers, dashes, or underscores.");
+      setErrorMsg("Invalid Format: API key must start with 'AIzaSy' and contain safe characters.");
       return;
     }
+    setErrorMsg('');
     localStorage.setItem('cs_gemini_api_key', trimmedKey);
     setKeySaved(true);
     setTimeout(() => setKeySaved(false), 2000);
@@ -211,6 +220,11 @@ You are Aura, an encouraging, professional, and knowledgeable AI Carbon Concierg
               {keySaved ? <Check size={14} /> : 'Save'}
             </button>
           </div>
+          {errorMsg && (
+            <p className="text-red text-xxs margin-top-xs" style={{ color: '#ef5350', margin: '4px 0' }}>
+              {errorMsg}
+            </p>
+          )}
           <p className="text-secondary text-xxs margin-top-xs">
             Keys are saved strictly in your local browser storage and never transmitted to external servers.
           </p>

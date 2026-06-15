@@ -11,6 +11,13 @@ const EquivalencePanel = lazy(() => import('./components/EquivalencePanel'));
 const Leaderboard = lazy(() => import('./components/Leaderboard'));
 const InsightsPanel = lazy(() => import('./components/InsightsPanel'));
 
+/**
+ * App Component - The main root component of CarbonSphere.
+ * Manages onboarding transitions, global layout containers, header navigation,
+ * footer metrics, and rendering dynamic lazy-loaded sections using Suspense fallback placeholders.
+ * 
+ * @component
+ */
 function App() {
   const {
     baseline,

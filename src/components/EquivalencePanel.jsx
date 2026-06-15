@@ -1,6 +1,13 @@
 import { Lightbulb, Car, TreePine, HelpCircle, ArrowRightLeft } from 'lucide-react';
 import PropTypes from 'prop-types';
 
+/**
+ * EquivalencePanel Component - Translates abstract annual carbon footprint (in metric tons)
+ * into relatable everyday equivalents: months of home power, car driving km, trees needed for offset,
+ * and Delhi-Mumbai passenger flight counts.
+ * 
+ * @component
+ */
 export default function EquivalencePanel({ currentFootprint }) {
   // Conversions:
   // 1. Household Electricity: Average Indian household uses ~150 kWh/month.

@@ -51,6 +51,11 @@ export const TEAMS_INITIAL = [
   { id: 'ops', name: 'Operations & HR', members: 30, reduction: 1820, streak: 9 }
 ];
 
+/**
+ * Computes the total baseline annual CO2 emission in metric tons.
+ * @param {Object} baseline - User baseline lifestyle habits.
+ * @returns {number} The calculated annual emissions in metric tons.
+ */
 export function calculateBaselineCO2(baseline) {
   // 1. Car Emissions
   let carFactor = 0.17; // petrol default
@@ -94,6 +99,12 @@ export function calculateBaselineCO2(baseline) {
   return Number((totalKg / 1000).toFixed(2)); // in metric tons CO2 per year
 }
 
+/**
+ * Custom React hook managing all carbon state, baseline data, user streak habits,
+ * daily completed actions, custom user actions, and team leaderboards.
+ * Syncs the current state automatically with localStorage.
+ * @returns {Object} The complete carbon state manager hook API.
+ */
 export default function useCarbonState() {
   const [baseline, setBaseline] = useState(() => {
     const saved = localStorage.getItem('cs_baseline');

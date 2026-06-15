@@ -2,6 +2,13 @@ import { useState } from 'react';
 import { Plane, Car, Flame, Sparkles, ArrowRight, ArrowLeft } from 'lucide-react';
 import PropTypes from 'prop-types';
 
+/**
+ * Calculator Component - A multi-step onboarding carbon footprint calculator.
+ * Walks the user through transportation, home utility usage, and dietary/shopping habits.
+ * Includes bounds validation on numeric inputs and keyboard support for custom radio selections.
+ * 
+ * @component
+ */
 export default function Calculator({ baseline, onChange, onComplete }) {
   const [step, setStep] = useState(1);
   const [localData, setLocalData] = useState(baseline);

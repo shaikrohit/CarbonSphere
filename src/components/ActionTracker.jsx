@@ -17,6 +17,13 @@ const iconMap = {
   Trash2
 };
 
+/**
+ * ActionTracker Component - Renders the daily check-list of micro-actions and custom actions.
+ * Allows filtering actions by category and adding/deleting user custom activities.
+ * Enforces accessibility roles and left/right keyboard navigation.
+ * 
+ * @component
+ */
 export default function ActionTracker({
   completedActions,
   toggleAction,

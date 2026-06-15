@@ -1,6 +1,13 @@
 import { Sparkles, Smile, AlertTriangle } from 'lucide-react';
 import PropTypes from 'prop-types';
 
+/**
+ * EcoSphere Component - Renders the live interactive digital island using responsive inline SVG.
+ * Elements dynamically adapt (sky gradients, wind turbines, clouds, trees, wildlife, factory smoke)
+ * depending on the calculated user EcoScore and carbon footprint metrics.
+ * 
+ * @component
+ */
 export default function EcoSphere({ ecoScore, currentFootprint }) {
   // Determine color states based on EcoScore
   const isHealthy = ecoScore >= 80;

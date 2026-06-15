@@ -1,3 +1,8 @@
+/**
+ * Determines the sustainability rank badge based on the user's active streak.
+ * @param {number} streakDays - The consecutive number of active habit tracking days.
+ * @returns {string} The name of the rank badge.
+ */
 export const getBadgeName = (streakDays) => {
   if (streakDays >= 15) return 'Eco Champion';
   if (streakDays >= 10) return 'Carbon Guardian';
@@ -5,6 +10,16 @@ export const getBadgeName = (streakDays) => {
   return 'Seedling';
 };
 
+/**
+ * Identifies the category with the highest carbon footprint in the user's baseline.
+ * @param {Object} b - The user's baseline carbon parameters.
+ * @param {number} b.carKmPerWeek - Weekly km driven.
+ * @param {string} b.carFuelType - Vehicle fuel type ('petrol', 'diesel', 'hybrid', 'ev').
+ * @param {number} b.flightsPerYear - Number of round-trip flights per year.
+ * @param {number} b.electricityKwhPerMonth - Monthly electricity bill in kWh.
+ * @param {string} b.dietType - Dietary profile.
+ * @returns {string} The name of the highest carbon emission category.
+ */
 export const getHighestCategory = (b) => {
   const carEmissions = b.carKmPerWeek * 52 * (b.carFuelType === 'diesel' ? 0.19 : b.carFuelType === 'ev' ? 0.05 : 0.17);
   const flightEmissions = b.flightsPerYear * 180;
@@ -18,6 +33,18 @@ export const getHighestCategory = (b) => {
   return 'dietary choices (meat consumption)';
 };
 
+/**
+ * Local rule-based fallback response engine for Aura chatbot assistant.
+ * Generates smart, contextual sustainability insights based on user query and profile.
+ * @param {string} query - The user's typed chat query.
+ * @param {Object} context - The current state context containing baseline and footprints.
+ * @param {Object} context.baseline - The user's baseline habits.
+ * @param {number} context.currentFootprint - The calculated current carbon footprint in tons.
+ * @param {number} context.totalBaseline - The calculated baseline carbon footprint in tons.
+ * @param {number} context.totalDailySavings - Current daily carbon savings in kilograms.
+ * @param {number} context.ecoScore - Calculated EcoScore (0 to 100).
+ * @returns {string} Contextual bot message response.
+ */
 export const getLocalResponse = (query, context) => {
   const q = query.toLowerCase();
   const highestEmissionCategory = getHighestCategory(context.baseline);

@@ -2,6 +2,12 @@ import { Trophy, Flame, Users, Sparkles } from 'lucide-react';
 import PropTypes from 'prop-types';
 import { getBadgeName } from '../utils/helpers';
 
+/**
+ * Leaderboard Component - Displays the department competition standings, user streaks,
+ * and ranking badges. Includes keyboard option selectability.
+ * 
+ * @component
+ */
 export default function Leaderboard({ teams, selectedTeam, onSelectTeam, streak }) {
   // Sort teams by total reduction descending
   const sortedTeams = [...teams].sort((a, b) => b.reduction - a.reduction);
