@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Bot, Send, Key, Check } from 'lucide-react';
 import PropTypes from 'prop-types';
 import { getHighestCategory, getLocalResponse } from '../utils/helpers';
+import { sanitizeInput } from '../hooks/useCarbonState';
 
 /**
  * InsightsPanel Component - Renders Aura, the AI Carbon Concierge assistant interface.
@@ -65,11 +66,12 @@ export default function InsightsPanel({
     e.preventDefault();
     if (!chatInput.trim()) return;
 
+    const sanitizedText = sanitizeInput(chatInput.trim());
     messageCounterRef.current += 1;
     const userMsg = {
       id: `user_${messageCounterRef.current}`,
       sender: 'user',
-      text: chatInput
+      text: sanitizedText
     };
 
     setMessages(prev => [...prev, userMsg]);

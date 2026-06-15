@@ -1,9 +1,16 @@
-import { describe, test, expect, vi } from 'vitest';
+import { describe, test, expect, vi, beforeAll } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import Leaderboard from './Leaderboard';
 import EquivalencePanel from './EquivalencePanel';
 import EcoSphere from './EcoSphere';
 import ActionTracker from './ActionTracker';
+import Calculator from './Calculator';
+import InsightsPanel from './InsightsPanel';
+
+// Mock JSDOM missing scrollIntoView
+beforeAll(() => {
+  window.HTMLElement.prototype.scrollIntoView = vi.fn();
+});
 
 // Mock Teams Data
 const mockTeams = [
@@ -133,5 +140,101 @@ describe('ActionTracker Component Tests', () => {
     
     // Core transport action: "Took metro/bus instead of driving"
     expect(screen.getByText('Took metro/bus instead of driving')).toBeDefined();
+  });
+});
+
+describe('Calculator Component Tests', () => {
+  const mockBaseline = {
+    carKmPerWeek: 50,
+    carFuelType: 'petrol',
+    flightsPerYear: 2,
+    publicTransitHoursPerWeek: 5,
+    electricityKwhPerMonth: 150,
+    lpgCylindersPerMonth: 0.5,
+    dietType: 'low-meat',
+    wasteRecycling: 'some',
+    shoppingFrequency: 'average'
+  };
+
+  test('walks through steps on Next/Back click', () => {
+    const handleChange = vi.fn();
+    const handleComplete = vi.fn();
+
+    render(
+      <Calculator
+        baseline={mockBaseline}
+        onChange={handleChange}
+        onComplete={handleComplete}
+      />
+    );
+
+    // Step 1 check
+    expect(screen.getByText('Step 1 of 3: Transportation')).toBeDefined();
+    
+    // Advance to Step 2
+    const nextBtn = screen.getByText('Next');
+    fireEvent.click(nextBtn);
+    expect(screen.getByText('Step 2 of 3: Home Energy')).toBeDefined();
+
+    // Go back to Step 1
+    const backBtn = screen.getByText('Back');
+    fireEvent.click(backBtn);
+    expect(screen.getByText('Step 1 of 3: Transportation')).toBeDefined();
+  });
+});
+
+describe('InsightsPanel Component Tests', () => {
+  const mockBaseline = {
+    carKmPerWeek: 50,
+    carFuelType: 'petrol',
+    flightsPerYear: 2,
+    publicTransitHoursPerWeek: 5,
+    electricityKwhPerMonth: 150,
+    lpgCylindersPerMonth: 0.5,
+    dietType: 'low-meat',
+    wasteRecycling: 'some',
+    shoppingFrequency: 'average'
+  };
+
+  test('renders chatbot messages and handles query inputs', () => {
+    render(
+      <InsightsPanel
+        baseline={mockBaseline}
+        currentFootprint={5.24}
+        totalBaseline={5.24}
+        totalDailySavings={0.0}
+        ecoScore={50}
+      />
+    );
+
+    // Welcome message renders
+    expect(screen.getByText(/your AI Carbon Concierge/)).toBeDefined();
+
+    // Typing query and clicking send
+    const input = screen.getByPlaceholderText('Ask Aura a carbon question...');
+    fireEvent.change(input, { target: { value: 'explain carbon footprint of car' } });
+    
+    const sendBtn = screen.getByRole('button', { name: 'Send message' });
+    fireEvent.click(sendBtn);
+
+    // Message shows in chat
+    expect(screen.getByText('explain carbon footprint of car')).toBeDefined();
+  });
+
+  test('configures API key inputs', () => {
+    render(
+      <InsightsPanel
+        baseline={mockBaseline}
+        currentFootprint={5.24}
+        totalBaseline={5.24}
+        totalDailySavings={0.0}
+        ecoScore={50}
+      />
+    );
+
+    const configBtn = screen.getByRole('button', { name: 'Configure Gemini Key' });
+    fireEvent.click(configBtn);
+
+    expect(screen.getByPlaceholderText('Paste Google Gemini API Key')).toBeDefined();
   });
 });

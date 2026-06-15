@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { CARBON_CONSTANTS } from '../utils/helpers';
 
 /**
  * Escapes HTML characters to prevent potential XSS injection in user custom actions.
@@ -58,42 +59,27 @@ export const TEAMS_INITIAL = [
  */
 export function calculateBaselineCO2(baseline) {
   // 1. Car Emissions
-  let carFactor = 0.17; // petrol default
-  if (baseline.carFuelType === 'diesel') carFactor = 0.19;
-  else if (baseline.carFuelType === 'hybrid') carFactor = 0.10;
-  else if (baseline.carFuelType === 'ev') carFactor = 0.05; // Indian grid mix average
-  const carCO2 = (Number(baseline.carKmPerWeek) || 0) * 52 * carFactor;
+  const carFactor = CARBON_CONSTANTS.car[baseline.carFuelType] || CARBON_CONSTANTS.car.petrol;
+  const carCO2 = (Number(baseline.carKmPerWeek) || 0) * CARBON_CONSTANTS.car.weeksPerYear * carFactor;
 
   // 2. Flights Emissions
-  // Domestic short/medium flights average ~180 kg CO2
-  const flightCO2 = (Number(baseline.flightsPerYear) || 0) * 180;
+  const flightCO2 = (Number(baseline.flightsPerYear) || 0) * CARBON_CONSTANTS.flight.kgPerFlight;
 
   // 3. Public Transit
-  // Average bus/metro: ~0.04 kg CO2 per km. Assuming average transit speed is 20 km/h.
-  const transitCO2 = (Number(baseline.publicTransitHoursPerWeek) || 0) * 52 * 20 * 0.04;
+  const transitCO2 = (Number(baseline.publicTransitHoursPerWeek) || 0) * CARBON_CONSTANTS.transit.weeksPerYear * CARBON_CONSTANTS.transit.speedKmH * CARBON_CONSTANTS.transit.factor;
 
   // 4. Electricity
-  // Indian grid average factor: ~0.82 kg CO2 per kWh
-  const electricityCO2 = (Number(baseline.electricityKwhPerMonth) || 0) * 12 * 0.82;
+  const electricityCO2 = (Number(baseline.electricityKwhPerMonth) || 0) * CARBON_CONSTANTS.electricity.monthsPerYear * CARBON_CONSTANTS.electricity.kgPerKwh;
 
   // 5. LPG Cylinders
-  // 14.2 kg LPG cylinder creates ~42.5 kg CO2
-  const lpgCO2 = (Number(baseline.lpgCylindersPerMonth) || 0) * 12 * 42.5;
+  const lpgCO2 = (Number(baseline.lpgCylindersPerMonth) || 0) * CARBON_CONSTANTS.lpg.monthsPerYear * CARBON_CONSTANTS.lpg.kgPerCylinder;
 
   // 6. Diet Type
-  let dietCO2 = 1200; // vegetarian baseline
-  if (baseline.dietType === 'heavy-meat') dietCO2 = 2500;
-  else if (baseline.dietType === 'low-meat') dietCO2 = 1700;
-  else if (baseline.dietType === 'vegan') dietCO2 = 700;
+  const dietCO2 = CARBON_CONSTANTS.diet[baseline.dietType] || CARBON_CONSTANTS.diet.vegetarian;
 
   // 7. Consumption & Waste
-  let wasteCO2 = 400; // average/some
-  if (baseline.wasteRecycling === 'none') wasteCO2 = 800;
-  else if (baseline.wasteRecycling === 'most') wasteCO2 = 100;
-
-  let shoppingCO2 = 400; // average
-  if (baseline.shoppingFrequency === 'high') shoppingCO2 = 800;
-  else if (baseline.shoppingFrequency === 'low') shoppingCO2 = 150;
+  const wasteCO2 = CARBON_CONSTANTS.waste[baseline.wasteRecycling] || CARBON_CONSTANTS.waste.some;
+  const shoppingCO2 = CARBON_CONSTANTS.shopping[baseline.shoppingFrequency] || CARBON_CONSTANTS.shopping.average;
 
   const totalKg = carCO2 + flightCO2 + transitCO2 + electricityCO2 + lpgCO2 + dietCO2 + wasteCO2 + shoppingCO2;
   return Number((totalKg / 1000).toFixed(2)); // in metric tons CO2 per year

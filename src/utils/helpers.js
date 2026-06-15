@@ -1,4 +1,51 @@
 /**
+ * Global carbon emission factors and constants used for footprint calculations.
+ * Centralizing these values prevents duplicated magic numbers across hook calculations
+ * and AI contextual components.
+ */
+export const CARBON_CONSTANTS = {
+  car: {
+    petrol: 0.17,
+    diesel: 0.19,
+    hybrid: 0.10,
+    ev: 0.05,
+    weeksPerYear: 52
+  },
+  flight: {
+    kgPerFlight: 180
+  },
+  transit: {
+    speedKmH: 20,
+    factor: 0.04,
+    weeksPerYear: 52
+  },
+  electricity: {
+    kgPerKwh: 0.82, // Indian grid average factor
+    monthsPerYear: 12
+  },
+  lpg: {
+    kgPerCylinder: 42.5,
+    monthsPerYear: 12
+  },
+  diet: {
+    vegetarian: 1200,
+    'heavy-meat': 2500,
+    'low-meat': 1700,
+    vegan: 700
+  },
+  waste: {
+    none: 800,
+    some: 400,
+    most: 100
+  },
+  shopping: {
+    high: 800,
+    average: 400,
+    low: 150
+  }
+};
+
+/**
  * Determines the sustainability rank badge based on the user's active streak.
  * @param {number} streakDays - The consecutive number of active habit tracking days.
  * @returns {string} The name of the rank badge.
@@ -21,10 +68,10 @@ export const getBadgeName = (streakDays) => {
  * @returns {string} The name of the highest carbon emission category.
  */
 export const getHighestCategory = (b) => {
-  const carEmissions = b.carKmPerWeek * 52 * (b.carFuelType === 'diesel' ? 0.19 : b.carFuelType === 'ev' ? 0.05 : 0.17);
-  const flightEmissions = b.flightsPerYear * 180;
-  const electricityEmissions = b.electricityKwhPerMonth * 12 * 0.82;
-  const dietEmissions = b.dietType === 'heavy-meat' ? 2500 : b.dietType === 'low-meat' ? 1700 : 1200;
+  const carEmissions = b.carKmPerWeek * CARBON_CONSTANTS.car.weeksPerYear * (CARBON_CONSTANTS.car[b.carFuelType] || CARBON_CONSTANTS.car.petrol);
+  const flightEmissions = b.flightsPerYear * CARBON_CONSTANTS.flight.kgPerFlight;
+  const electricityEmissions = b.electricityKwhPerMonth * CARBON_CONSTANTS.electricity.monthsPerYear * CARBON_CONSTANTS.electricity.kgPerKwh;
+  const dietEmissions = CARBON_CONSTANTS.diet[b.dietType] || CARBON_CONSTANTS.diet.vegetarian;
 
   const max = Math.max(carEmissions, flightEmissions, electricityEmissions, dietEmissions);
   if (max === carEmissions) return 'transportation (car driving)';
